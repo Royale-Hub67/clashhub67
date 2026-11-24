@@ -24,6 +24,7 @@
     <nav class="nav-links">
         <a href="index.html" class="active">Inicio</a>
         <a href="busqueda.html">Mazos</a>
+        <a href="creador_mazos.html">Creador</a>
         <a href="servicios.html">Servicios</a>
         <a href="contacto.html">Contacto</a>
     </nav>
@@ -52,8 +53,8 @@
             y encuentra el mazo perfecto para conquistar la arena.
         </p>
         <div class="hero-buttons">
-            <a href="busqueda.html" class="primary-btn">
-                Explorar mazos →
+            <a href="creador_mazos.html" class="primary-btn">
+                Crea tu mazo →
             </a>
             <a href="#populares" class="secondary-btn">
                 Ver populares
@@ -240,9 +241,7 @@
      CONEXIÓN A SUPABASE
 ================================== -->
 <script>
-    // Tu proyecto de Supabase
     const SUPABASE_URL = 'https://grxoyzivmnoaqdisejri.supabase.co';
-    // Pega aquí tu llave "anon" / "public" desde Settings -> API Keys en Supabase[cite: 1]
     const SUPABASE_ANON_KEY = 'TU-LLAVE-ANON-PUBLICA'; 
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -310,7 +309,6 @@
     }
 
     async function cargarMazosPopulares() {
-        // Si aún no pones tu API key, mantiene el mazo de ejemplo sin dar error
         if (SUPABASE_ANON_KEY === 'TU-LLAVE-ANON-PUBLICA') return;
 
         const contenedor = document.getElementById('deck-grid');
@@ -333,7 +331,6 @@
             .order('puntuacion', { ascending: false })
             .limit(6);
 
-        // Si hay mazos en Supabase, reemplaza el ejemplo estático por los reales
         if (!error && mazos && mazos.length > 0) {
             contenedor.innerHTML = '';
 
