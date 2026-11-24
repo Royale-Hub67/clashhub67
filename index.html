@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clashito | Mazos y Cartas</title>
     <link rel="stylesheet" href="estil.css">
+    <!-- SDK Oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -92,7 +94,7 @@
 </section>
 
 <!-- ==================================
-     MAZOS POPULARES (Estático)
+     MAZOS POPULARES (Dinámico con Supabase + Respaldo estático)
 ================================== -->
 <section class="popular-section" id="populares">
     <div class="section-heading">
@@ -106,8 +108,8 @@
         </a>
     </div>
 
-    <div class="deck-grid">
-        <!-- Ejemplo de Mazo 1 -->
+    <div class="deck-grid" id="deck-grid">
+        <!-- Ejemplo de Mazo 1 (Se muestra por defecto mientras carga o si la BD está vacía) -->
         <article class="deck-card">
             <div class="deck-header">
                 <div>
@@ -118,42 +120,34 @@
             </div>
 
             <div class="cards-grid">
-                <!-- Carta 1 -->
                 <div class="game-card">
                     <img src="img/Card_Goblin_Barrel.png" alt="Barril de Duendes" class="card-image" loading="lazy">
                     <span>Barril de Duendes</span>
                 </div>
-                <!-- Carta 2 -->
                 <div class="game-card">
                     <img src="img/Card_Princess.png" alt="Princesa" class="card-image" loading="lazy">
                     <span>Princesa</span>
                 </div>
-                <!-- Carta 3 -->
                 <div class="game-card">
                     <img src="img/Card_Goblin_Gang.png" alt="Pandilla de Duendes" class="card-image" loading="lazy">
                     <span>Pandilla de Duendes</span>
                 </div>
-                <!-- Carta 4 -->
                 <div class="game-card">
                     <img src="img/Card_Inferno_Tower.png" alt="Torre Infernal" class="card-image" loading="lazy">
                     <span>Torre Infernal</span>
                 </div>
-                <!-- Carta 5 -->
                 <div class="game-card">
                     <img src="img/Card_Knight.png" alt="Caballero" class="card-image" loading="lazy">
                     <span>Caballero</span>
                 </div>
-                <!-- Carta 6 -->
                 <div class="game-card">
                     <img src="img/Card_Ice_Spirit.png" alt="Espíritu de Hielo" class="card-image" loading="lazy">
                     <span>Espíritu de Hielo</span>
                 </div>
-                <!-- Carta 7 -->
                 <div class="game-card">
                     <img src="img/Card_Rocket.png" alt="Cohete" class="card-image" loading="lazy">
                     <span>Cohete</span>
                 </div>
-                <!-- Carta 8 -->
                 <div class="game-card">
                     <img src="img/Card_The_Log.png" alt="El Tronco" class="card-image" loading="lazy">
                     <span>El Tronco</span>
@@ -242,6 +236,159 @@
     </small>
 </footer>
 
+<!-- ==================================
+     CONEXIÓN A SUPABASE
+================================== -->
+<script>
+    // Tu proyecto de Supabase
+    const SUPABASE_URL = 'https://grxoyzivmnoaqdisejri.supabase.co';
+    // Pega aquí tu llave "anon" / "public" desde Settings -> API Keys en Supabase[cite: 1]
+    const SUPABASE_ANON_KEY = 'TU-LLAVE-ANON-PUBLICA'; 
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const imagenesCartas = {
+        "Barril de Duendes": "Goblin Barrel", "Princesa": "Princess",
+        "Pandilla de Duendes": "Goblin Gang", "Torre Infernal": "Inferno Tower",
+        "Caballero": "Knight", "Espíritu de Hielo": "Ice Spirit",
+        "Cohete": "Rocket", "El Tronco": "The Log", "Tronco": "The Log",
+        "Montapuercos": "Hog Rider", "Esqueletos": "Skeletons",
+        "Golem de Hielo": "Ice Golem", "Gólem de Hielo": "Ice Golem",
+        "Mosquetera": "Musketeer", "Cañón": "Cannon", "Bola de Fuego": "Fireball",
+        "Pekka": "Pekka", "P.E.K.K.A.": "Pekka", "Mago Eléctrico": "Electro Wizard",
+        "Bandida": "Bandit", "Fantasma Real": "Royal Ghost",
+        "Ariete de Batalla": "Battle Ram", "Veneno": "Poison",
+        "Descarga": "Zap", "Zap": "Zap", "Esbirros": "Minion",
+        "Mago": "Wizard", "Valquiria": "Valkyrie", "Dragón Infernal": "Inferno Dragon",
+        "Bebé Dragón": "Baby Dragon", "Gigante": "Giant",
+        "Globo Bombástico": "Balloon", "Leñador": "Lumberjack",
+        "Minero": "Miner", "Arquera": "Archers", "Arqueras": "Archers",
+        "Reina Arquera": "Archer Queen", "Rey Esqueleto": "Skeleton King",
+        "Caballero Dorado": "Golden Knight", "Minero Poderoso": "Mighty Miner",
+        "Fénix": "Phoenix", "Monje": "Monk", "Esqueleto Gigante": "Giant Skeleton",
+        "Megaesbirro": "Mega Minion", "Dragón Eléctrico": "Electro Dragon",
+        "Lanzafuegos": "Firecracker", "Murciélagos": "Bats", "Tornado": "Tornado",
+        "Ejército de Esqueletos": "Skeleton Army", "Duendes": "Goblins",
+        "Cementerio": "Graveyard", "Cazador": "Hunter", "Pescador": "Fisherman",
+        "Gigante Noble": "Royal Giant", "Mega Caballero": "Mega Knight",
+        "Bruja": "Witch", "Bruja Madre": "Mother Witch",
+        "Dragones Esqueleto": "Skeleton Dragons", "Jaula del Forzudo": "Goblin Cage",
+        "Mortero": "Mortar", "Ballesta": "X-Bow", "Lanzarrocas": "Bowler",
+        "Duende Lanzadardos": "Dart Goblin", "Barril de Bárbaro": "Barbarian Barrel",
+        "Flechas": "Arrows", "Horno": "Furnace",
+        "Recolector de Elixir": "Elixir Collector", "Torre Bombardera": "Bomb Tower",
+        "Guardias": "Guards", "Bruja Nocturna": "Night Witch",
+        "Duende Gigante": "Goblin Giant", "Furia": "Rage", "Rayo": "Lightning",
+        "Congelación": "Freeze", "Espejo": "Mirror", "Clon": "Clone",
+        "Terremoto": "Earthquake", "Reclutas Reales": "Royal Recruits",
+        "Puercos Reales": "Royal Hogs", "Máquina Voladora": "Flying Machine",
+        "Cerdos Reales": "Royal Hogs", "Espíritu Eléctrico": "Electro Spirit",
+        "Espíritu Sanador": "Heal Spirit", "Espíritu de Fuego": "Fire Spirit",
+        "Bárbaros": "Barbarians", "Bárbaros de Élite": "Elite Barbarians",
+        "Príncipe": "Prince", "Príncipe Oscuro": "Dark Prince"
+    };
+
+    function escaparHTML(texto) {
+        if (!texto) return '';
+        const div = document.createElement('div');
+        div.textContent = texto;
+        return div.innerHTML;
+    }
+
+    function obtenerRutaImagen(carta) {
+        if (carta.imagen && carta.imagen.trim() !== '') {
+            return `img/${carta.imagen}`;
+        }
+        let nombreIngles = imagenesCartas[carta.nombre] || carta.nombre;
+        nombreIngles = nombreIngles
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .replace(/[\s.]/g, '_');
+        return `img/Card_${nombreIngles}.png`;
+    }
+
+    async function cargarMazosPopulares() {
+        // Si aún no pones tu API key, mantiene el mazo de ejemplo sin dar error
+        if (SUPABASE_ANON_KEY === 'TU-LLAVE-ANON-PUBLICA') return;
+
+        const contenedor = document.getElementById('deck-grid');
+
+        const { data: mazos, error } = await supabaseClient
+            .from('mazos')
+            .select(`
+                id,
+                nombre,
+                descripcion,
+                costo_promedio,
+                puntuacion,
+                mazo_cartas (
+                    cartas (
+                        nombre,
+                        imagen
+                    )
+                )
+            `)
+            .order('puntuacion', { ascending: false })
+            .limit(6);
+
+        // Si hay mazos en Supabase, reemplaza el ejemplo estático por los reales
+        if (!error && mazos && mazos.length > 0) {
+            contenedor.innerHTML = '';
+
+            mazos.forEach(mazo => {
+                const listaCartas = mazo.mazo_cartas ? mazo.mazo_cartas.map(mc => mc.cartas) : [];
+
+                let cartasHTML = '';
+                listaCartas.forEach(carta => {
+                    if (!carta) return;
+                    const rutaImg = obtenerRutaImagen(carta);
+                    cartasHTML += `
+                        <div class="game-card">
+                            <img src="${escaparHTML(rutaImg)}" alt="${escaparHTML(carta.nombre)}" class="card-image" loading="lazy">
+                            <span>${escaparHTML(carta.nombre)}</span>
+                        </div>
+                    `;
+                });
+
+                let desc = mazo.descripcion || '';
+                if (desc.length > 105) {
+                    desc = desc.substring(0, 102) + '...';
+                }
+
+                const tarjetaHTML = `
+                    <article class="deck-card">
+                        <div class="deck-header">
+                            <div>
+                                <span class="deck-type">Mazo Comunidad</span>
+                                <h3>${escaparHTML(mazo.nombre)}</h3>
+                            </div>
+                            <div class="elixir">⚡ ${escaparHTML(mazo.costo_promedio)}</div>
+                        </div>
+
+                        <div class="cards-grid">
+                            ${cartasHTML}
+                        </div>
+
+                        <div class="deck-description">
+                            ${escaparHTML(desc)}
+                        </div>
+
+                        <div class="deck-footer">
+                            <span class="votes">👍 ${mazo.puntuacion || 0} votos</span>
+                            <a href="busqueda.html?id=${mazo.id}">Explorar mazo →</a>
+                        </div>
+                    </article>
+                `;
+
+                contenedor.insertAdjacentHTML('beforeend', tarjetaHTML);
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarMazosPopulares);
+</script>
+
 </body>
-</html>
 </html>
