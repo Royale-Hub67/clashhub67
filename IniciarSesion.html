@@ -1,311 +1,285 @@
-
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de usuario</title>
-
-    <style>
-        /* --- Estilos Globales --- */
-        :root {
-            --color-primary: #6a1b9a;
-            --color-accent-yellow: #ffca28;
-            --color-accent-cyan: #00bcd4;
-            --color-accent-pink: #e91e63;
-            --color-text-dark: #333;
-            --color-text-light: #f5f5f5;
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background-color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* --- Marco del Navegador --- */
-        .browser-frame {
-            width: 900px;
-            max-width: 100%;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            border: 1px solid #ccc;
-        }
-
-        .browser-frame::before {
-            content: "";
-            display: block;
-            height: 30px;
-            background-color: #f0f0f0;
-            border-bottom: 1px solid #ddd;
-            background-image:
-                radial-gradient(circle, #ff5f56 6px, transparent 7px),
-                radial-gradient(circle, #ffbd2e 6px, transparent 7px),
-                radial-gradient(circle, #27c93f 6px, transparent 7px);
-            background-position: 10px 50%, 30px 50%, 50px 50%;
-            background-repeat: no-repeat;
-        }
-
-        /* --- Header --- */
-        .site-header {
-            background-color: var(--color-primary);
-            color: var(--color-text-light);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            border-bottom: 3px solid var(--color-accent-yellow);
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-icon {
-            font-size: 2rem;
-        }
-
-        .site-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .main-nav ul {
-            list-style: none;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .main-nav a {
-            text-decoration: none;
-            color: var(--color-text-light);
-            font-weight: 500;
-            padding: 8px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        .main-nav a.active,
-        .main-nav a:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        /* --- Main --- */
-        .site-main {
-            display: flex;
-            justify-content: center;
-            padding: 40px 30px;
-            gap: 40px;
-        }
-
-        /* --- Formulario de Registro --- */
-        .content-section {
-            width: 100%;
-            max-width: 500px;
-            border: 2px solid var(--color-accent-yellow);
-            border-radius: 8px;
-            padding: 30px;
-            background-color: #fffcf5;
-            box-shadow: 3px 3px 0 var(--color-accent-yellow);
-        }
-
-        .content-section h2 {
-            font-size: 2rem;
-            color: var(--color-text-dark);
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .content-section p {
-            margin-bottom: 25px;
-            line-height: 1.6;
-            color: #555;
-            text-align: center;
-        }
-
-        /* Campos del formulario */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--color-text-dark);
-            font-weight: 600;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            font-family: var(--font-family);
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--color-primary);
-            box-shadow: 0 0 5px rgba(106, 27, 154, 0.3);
-        }
-
-        /* Botón */
-        .btn-register {
-            display: block;
-            width: 100%;
-            padding: 13px;
-            background-color: var(--color-primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        .btn-register:hover {
-            background-color: #4a148c;
-            transform: translateY(-2px);
-        }
-
-        /* --- Footer --- */
-        .site-footer {
-            background-color: var(--color-accent-pink);
-            color: var(--color-text-light);
-            text-align: center;
-            padding: 20px;
-            font-size: 0.9rem;
-            border-top: 3px solid var(--color-primary);
-        }
-
-        /* --- Adaptación a móviles --- */
-        @media (max-width: 600px) {
-            .site-header {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-            }
-
-            .site-main {
-                padding: 25px 15px;
-            }
-
-            .content-section {
-                padding: 20px;
-            }
-
-            .content-section h2 {
-                font-size: 1.6rem;
-            }
-        }
-    </style>
+    <title>Iniciar Sesión | Clashito</title>
+    <link rel="stylesheet" href="estil.css">
+    <!-- SDK Oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
-    <div class="browser-frame">
+<!-- ==================================
+     NAVEGACIÓN
+================================== -->
+<header class="navbar">
+    <a href="index.html" class="logo">
+        <span class="logo-icon">⚔</span>
+        CLASHITO
+    </a>
 
-        <!-- Encabezado y navegación -->
-        <header class="site-header">
-            <div class="logo-container">
-                <span class="logo-icon">📝</span>
-                <span class="site-title">Registro de usuario</span>
-            </div>
+    <nav class="nav-links">
+        <a href="index.html">Inicio</a>
+        <a href="busqueda.html">Mazos</a>
+        <a href="creador_mazos.html">Creador</a>
+        <a href="servicios.html">Servicios</a>
+        <a href="contacto.html">Contacto</a>
+    </nav>
 
-            <nav class="main-nav">
-                <ul>
-                    <li>
-                        <a href="PaginadeInicio.php">Inicio</a>
-                    </li>
-                    <li>
-                        <a href="contacto.php">Contacto</a>
-                    </li>
-                </ul>
-            </nav>
-        </header>
+    <a href="IniciarSesion.html" class="login-btn active">
+        Iniciar sesión
+    </a>
+</header>
 
-        <!-- Contenido principal -->
-        <main class="site-main">
+<main>
 
-            <section class="content-section">
-                <h2>Formulario de Registro</h2>
+<!-- ==================================
+     ENCABEZADO DE PÁGINA
+================================== -->
+<section class="page-intro">
+    <p class="section-tag">ACCESO DE JUGADORES</p>
+    <h1>Tu cuenta en <span>Clashito</span></h1>
+    <p>
+        Inicia sesión o regístrate para guardar tus mazos favoritos,
+        votar por estrategias y vincular tu perfil de Clash Royale.
+    </p>
+</section>
 
-                <p>
-                    Bienvenido. Completa tus datos para registrarte.
-                </p>
+<!-- ==================================
+     FORMULARIOS DE ACCESO / REGISTRO
+================================== -->
+<section class="popular-section" style="max-width: 520px; margin: 0 auto;">
 
-                <form action="inicio.php" method="POST">
-
-                    <div class="form-group">
-                        <label for="nombre">Nombre:</label>
-                        <input
-                            type="text"
-                            id="nombre"
-                            name="nombre"
-                            placeholder="Escribe tu nombre"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="correo">E-mail:</label>
-                        <input
-                            type="email"
-                            id="correo"
-                            name="correo"
-                            placeholder="ejemplo@correo.com"
-                            required
-                        >
-                    </div>
-                    
-<div class="form-group">
-    <label for="contrasena">Contraseña:</label>
-    <input
-        type="password"
-        id="contrasena"
-        name="contrasena"
-        placeholder="Escribe tu contraseña"
-        required
-    >
-</div>
-
-
-                    <button type="submit" class="btn-register">
-                        Registrarme
-                    </button>
-
-                </form>
-            </section>
-
-        </main>
-
-        <!-- Pie de página -->
-        <footer class="site-footer">
-            <p>Formulario de Registro &copy; 2026</p>
-        </footer>
-
+    <!-- Botones para alternar entre Iniciar Sesión y Registro -->
+    <div class="hero-buttons" style="justify-content: center; margin-bottom: 1.5rem;">
+        <button type="button" class="primary-btn" id="tabLogin">
+            Iniciar sesión
+        </button>
+        <button type="button" class="secondary-btn" id="tabRegister">
+            Crear cuenta
+        </button>
     </div>
+
+    <!-- Mensaje de estado dinámico -->
+    <div id="authNotice" class="notice" style="display: none; margin-bottom: 1.5rem;"></div>
+
+    <!-- FORMULARIO 1: INICIAR SESIÓN -->
+    <form class="panel" id="loginForm">
+        <label class="field-label" for="loginEmail">
+            Correo electrónico
+        </label>
+        <input
+            class="text-input"
+            type="email"
+            id="loginEmail"
+            placeholder="tu@correo.com"
+            required
+        >
+
+        <label class="field-label" for="loginPassword">
+            Contraseña
+        </label>
+        <input
+            class="text-input"
+            type="password"
+            id="loginPassword"
+            placeholder="••••••••"
+            required
+        >
+
+        <button class="primary-btn" type="submit" id="loginSubmitBtn" style="width: 100%; margin-top: 1rem;">
+            ENTRAR A LA ARENA →
+        </button>
+    </form>
+
+    <!-- FORMULARIO 2: CREAR CUENTA (Oculto por defecto) -->
+    <form class="panel" id="registerForm" style="display: none;">
+        <label class="field-label" for="regUsuario">
+            Nombre de usuario
+        </label>
+        <input
+            class="text-input"
+            type="text"
+            id="regUsuario"
+            maxlength="50"
+            placeholder="Ej. ReyRojo99"
+            required
+        >
+
+        <label class="field-label" for="regTag">
+            Player Tag de Clash Royale (opcional)
+        </label>
+        <input
+            class="text-input"
+            type="text"
+            id="regTag"
+            maxlength="15"
+            placeholder="Ej. #2PP"
+        >
+
+        <label class="field-label" for="regEmail">
+            Correo electrónico
+        </label>
+        <input
+            class="text-input"
+            type="email"
+            id="regEmail"
+            placeholder="tu@correo.com"
+            required
+        >
+
+        <label class="field-label" for="regPassword">
+            Contraseña (mínimo 6 caracteres)
+        </label>
+        <input
+            class="text-input"
+            type="password"
+            id="regPassword"
+            minlength="6"
+            placeholder="••••••••"
+            required
+        >
+
+        <button class="primary-btn" type="submit" id="regSubmitBtn" style="width: 100%; margin-top: 1rem;">
+            CREAR MI CUENTA →
+        </button>
+    </form>
+
+</section>
+
+</main>
+
+<!-- ==================================
+     FOOTER
+================================== -->
+<footer>
+    <a href="index.html" class="logo">
+        ⚔ CLASHITO
+    </a>
+    <p>
+        Tu espacio para descubrir y compartir mazos de Clash Royale.
+    </p>
+    <small>
+        © 2026 Clashito. Todos los derechos reservados.
+    </small>
+</footer>
+
+<!-- ==================================
+     LÓGICA DE AUTENTICACIÓN CON SUPABASE
+================================== -->
+<script>
+    const SUPABASE_URL = 'https://grxoyzivmnoaqdisejri.supabase.co';
+    const SUPABASE_ANON_KEY = 'TU-LLAVE-ANON-PUBLICA'; // Pega aquí tu llave anon/public
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const authNotice = document.getElementById('authNotice');
+
+    function mostrarAviso(texto, esError = false) {
+        authNotice.textContent = texto;
+        authNotice.className = esError ? 'notice error' : 'notice success';
+        authNotice.style.display = 'block';
+    }
+
+    // Alternar pestañas
+    tabLogin.addEventListener('click', () => {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        tabLogin.className = 'primary-btn';
+        tabRegister.className = 'secondary-btn';
+        authNotice.style.display = 'none';
+    });
+
+    tabRegister.addEventListener('click', () => {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        tabRegister.className = 'primary-btn';
+        tabLogin.className = 'secondary-btn';
+        authNotice.style.display = 'none';
+    });
+
+    // PROCESAR INICIO DE SESIÓN
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const btn = document.getElementById('loginSubmitBtn');
+
+        if (SUPABASE_ANON_KEY === 'TU-LLAVE-ANON-PUBLICA') {
+            mostrarAviso('Vista previa: agrega tu API Key de Supabase para iniciar sesión.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'VERIFICANDO...';
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        btn.disabled = false;
+        btn.textContent = 'ENTRAR A LA ARENA →';
+
+        if (error) {
+            mostrarAviso('Correo o contraseña incorrectos.', true);
+        } else {
+            mostrarAviso('¡Bienvenido de nuevo! Redirigiendo al inicio...');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1200);
+        }
+    });
+
+    // PROCESAR REGISTRO DE NUEVO USUARIO
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const usuario = document.getElementById('regUsuario').value.trim();
+        const playerTag = document.getElementById('regTag').value.trim().toUpperCase();
+        const email = document.getElementById('regEmail').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const btn = document.getElementById('regSubmitBtn');
+
+        if (SUPABASE_ANON_KEY === 'TU-LLAVE-ANON-PUBLICA') {
+            mostrarAviso('Vista previa: agrega tu API Key de Supabase para crear cuentas.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'CREANDO CUENTA...';
+
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    usuario: usuario,
+                    player_tag: playerTag
+                }
+            }
+        });
+
+        btn.disabled = false;
+        btn.textContent = 'CREAR MI CUENTA →';
+
+        if (error) {
+            mostrarAviso('Error al crear cuenta: ' + error.message, true);
+        } else {
+            mostrarAviso('¡Cuenta creada con éxito! Ya puedes iniciar sesión.');
+            registerForm.reset();
+            setTimeout(() => tabLogin.click(), 1500);
+        }
+    });
+</script>
 
 </body>
 </html>
