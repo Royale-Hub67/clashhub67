@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto | Clashito</title>
+    <link rel="stylesheet" href="estil.css">
+    <!-- SDK Oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<!-- ==================================
+     NAVEGACIÓN
+================================== -->
+<header class="navbar">
+    <a href="index.html" class="logo">
+        <span class="logo-icon">⚔</span>
+        CLASHITO
+    </a>
+
+    <nav class="nav-links">
+        <a href="index.html">Inicio</a>
+        <a href="busqueda.html">Mazos</a>
+        <a href="creador_mazos.html">Creador</a>
+        <a href="servicios.html">Servicios</a>
+        <a href="contacto.html" class="active">Contacto</a>
+    </nav>
+
+    <a href="IniciarSesion.html" class="login-btn">
+        Iniciar sesión
+    </a>
+</header>
+
+<main>
+
+<!-- ==================================
+     ENCABEZADO DE PÁGINA
+================================== -->
+<section class="page-intro">
+    <p class="section-tag">ESTAMOS PARA AYUDARTE</p>
+    <h1>Contacta con <span>Clashito</span></h1>
+    <p>
+        ¿Tienes sugerencias de cartas, encontraste algún error o quieres proponer
+        una colaboración para la comunidad? Escríbenos.
+    </p>
+</section>
+
+<!-- ==================================
+     CANALES DE CONTACTO RÁPIDO
+================================== -->
+<section class="stats">
+    <div class="stat-item">
+        <span class="stat-icon">📧</span>
+        <div>
+            <strong>Correo directo</strong>
+            <small>soporte@clashito.gg</small>
+        </div>
+    </div>
+
+    <div class="stat-item">
+        <span class="stat-icon">💬</span>
+        <div>
+            <strong>Comunidad Discord</strong>
+            <small>discord.gg/clashito</small>
+        </div>
+    </div>
+
+    <div class="stat-item">
+        <span class="stat-icon">⚡</span>
+        <div>
+            <strong>Tiempo de respuesta</strong>
+            <small>Menos de 24 horas</small>
+        </div>
+    </div>
+</section>
+
+<!-- ==================================
+     FORMULARIO DE CONTACTO
+================================== -->
+<section class="popular-section">
+    <!-- Mensaje de estado dinámico -->
+    <div id="statusNotice" class="notice" style="display: none; margin-bottom: 1.5rem;"></div>
+
+    <form class="panel" id="contactForm">
+        <label class="field-label" for="nombre">
+            Tu nombre o nick en Clash Royale
+        </label>
+        <input
+            class="text-input"
+            type="text"
+            id="nombre"
+            name="nombre"
+            maxlength="80"
+            placeholder="Ej. ReyRojo99 (#2PP)"
+            required
+        >
+
+        <label class="field-label" for="email">
+            Correo electrónico
+        </label>
+        <input
+            class="text-input"
+            type="email"
+            id="email"
+            name="email"
+            maxlength="120"
+            placeholder="tu@correo.com"
+            required
+        >
+
+        <label class="field-label" for="asunto">
+            Motivo del mensaje
+        </label>
+        <select class="text-input" id="asunto" name="asunto" required>
+            <option value="">Selecciona una opción</option>
+            <option value="Sugerencia de mejora">Sugerencia de mejora</option>
+            <option value="Reportar un error">Reportar un error en la web</option>
+            <option value="Mazo o carta faltante">Mazo o carta faltante</option>
+            <option value="Colaboración / Torneos">Colaboración / Torneos</option>
+            <option value="Otro">Otro</option>
+        </select>
+
+        <label class="field-label" for="mensaje">
+            Mensaje
+        </label>
+        <textarea
+            class="text-input"
+            id="mensaje"
+            name="mensaje"
+            rows="5"
+            maxlength="2000"
+            placeholder="Cuéntanos en qué podemos ayudarte..."
+            required
+        ></textarea>
+
+        <button class="primary-btn" type="submit" id="submitBtn">
+            ENVIAR MENSAJE →
+        </button>
+    </form>
+</section>
+
+<!-- ==================================
+     COMUNIDAD
+================================== -->
+<section class="community">
+    <div>
+        <span class="section-tag">FORMA PARTE DE LA COMUNIDAD</span>
+        <h2>¿Quieres compartir tus mazos?</h2>
+        <p>
+            Crea tu cuenta gratuita para guardar tus estrategias favoritas,
+            votar por los mejores mazos y vincular tu perfil de jugador.
+        </p>
+    </div>
+    <a href="IniciarSesion.html" class="primary-btn">
+        Únete ahora →
+    </a>
+</section>
+
+</main>
+
+<!-- ==================================
+     FOOTER
+================================== -->
+<footer>
+    <a href="index.html" class="logo">
+        ⚔ CLASHITO
+    </a>
+    <p>
+        Tu espacio para descubrir y compartir mazos de Clash Royale.
+    </p>
+    <small>
+        © 2026 Clashito. Todos los derechos reservados.
+    </small>
+</footer>
+
+<!-- ==================================
+     LÓGICA DE ENVÍO CON SUPABASE
+================================== -->
+<script>
+    const SUPABASE_URL = 'https://grxoyzivmnoaqdisejri.supabase.co';
+    const SUPABASE_ANON_KEY = 'TU-LLAVE-ANON-PUBLICA'; // Pega aquí tu llave anon/public
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const contactForm = document.getElementById('contactForm');
+    const statusNotice = document.getElementById('statusNotice');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function mostrarAviso(texto, esError = false) {
+        statusNotice.textContent = texto;
+        statusNotice.className = esError ? 'notice error' : 'notice success';
+        statusNotice.style.display = 'block';
+    }
+
+    contactForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const nombre = document.getElementById('nombre').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const asunto = document.getElementById('asunto').value.trim();
+        const mensaje = document.getElementById('mensaje').value.trim();
+
+        if (!nombre || !email || !asunto || !mensaje) {
+            mostrarAviso('Por favor completa todos los campos obligatorios.', true);
+            return;
+        }
+
+        // Si aún no has configurado tu API key, simula un envío exitoso para pruebas visuales
+        if (SUPABASE_ANON_KEY === 'TU-LLAVE-ANON-PUBLICA') {
+            mostrarAviso('¡Mensaje enviado correctamente! (Modo vista previa: agrega tu API Key de Supabase para guardarlo en la base de datos).');
+            contactForm.reset();
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'ENVIANDO...';
+
+        const { error } = await supabaseClient
+            .from('mensajes_contacto')
+            .insert([
+                {
+                    nombre: nombre,
+                    email: email,
+                    asunto: asunto,
+                    mensaje: mensaje
+                }
+            ]);
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'ENVIAR MENSAJE →';
+
+        if (error) {
+            console.error('Error al enviar mensaje:', error);
+            mostrarAviso('Hubo un problema al enviar tu mensaje. Inténtalo de nuevo más tarde.', true);
+        } else {
+            mostrarAviso('¡Gracias por escribirnos! Tu mensaje ha sido recibido y te responderemos pronto.');
+            contactForm.reset();
+        }
+    });
+</script>
+
+</body>
+</html>
