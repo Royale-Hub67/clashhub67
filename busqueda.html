@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorar Mazos | Clashito</title>
+    <link rel="stylesheet" href="estil.css">
+    <!-- SDK Oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<!-- ==================================
+     NAVEGACIÓN
+================================== -->
+<header class="navbar">
+    <a href="index.html" class="logo">
+        <span class="logo-icon">⚔</span>
+        CLASHITO
+    </a>
+
+    <nav class="nav-links">
+        <a href="index.html">Inicio</a>
+        <a href="busqueda.html" class="active">Mazos</a>
+        <a href="creador_mazos.html">Creador</a>
+        <a href="servicios.html">Servicios</a>
+        <a href="contacto.html">Contacto</a>
+    </nav>
+
+    <a href="IniciarSesion.html" class="login-btn">
+        Iniciar sesión
+    </a>
+</header>
+
+<main>
+
+<!-- ==================================
+     ENCABEZADO DE PÁGINA
+================================== -->
+<section class="page-intro">
+    <p class="section-tag">BIBLIOTECA DE ESTRATEGIAS</p>
+    <h1>Explora todos los <span>mazos</span></h1>
+    <p>
+        Filtra por arquetipo, busca por nombre o carta clave y encuentra
+        la combinación ideal para subir copas.
+    </p>
+</section>
+
+<!-- ==================================
+     BARRA DE BÚSQUEDA Y FILTROS
+================================== -->
+<section class="popular-section" style="padding-bottom: 0;">
+    <div class="panel" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
+        <div>
+            <label class="field-label" for="searchInput">Buscar mazo o carta</label>
+            <input
+                class="text-input"
+                type="text"
+                id="searchInput"
+                placeholder="Ej. Hog Cycle, Montapuercos, Tronco..."
+                style="margin-bottom: 0;"
+            >
+        </div>
+
+        <div>
+            <label class="field-label" for="typeFilter">Estrategia / Tipo</label>
+            <select class="text-input" id="typeFilter" style="margin-bottom: 0;">
+                <option value="">Todas las estrategias</option>
+                <option value="Cycle">Cycle</option>
+                <option value="Control">Control</option>
+                <option value="Beatdown">Beatdown</option>
+                <option value="Spell Bait">Spell Bait</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="field-label" for="sortSelect">Ordenar por</label>
+            <select class="text-input" id="sortSelect" style="margin-bottom: 0;">
+                <option value="puntuacion">Más votados</option>
+                <option value="recientes">Más recientes</option>
+                <option value="elixir_asc">Menor elixir promedio</option>
+                <option value="elixir_desc">Mayor elixir promedio</option>
+            </select>
+        </div>
+
+        <div>
+            <button type="button" class="secondary-btn" id="resetFiltersBtn" style="width: 100%; text-align: center;">
+                Limpiar filtros
+            </button>
+        </div>
+    </div>
+
+    <!-- Aviso de filtro activo por ID si viene desde index.html?id=... -->
+    <div id="activeIdBanner" class="notice" style="display: none; margin-top: 1rem; justify-content: space-between; align-items: center;">
+        <span id="activeIdText">Mostrando mazo seleccionado</span>
+        <button type="button" class="secondary-btn" id="showAllDecksBtn" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">
+            Ver todos los mazos
+        </button>
+    </div>
+</section>
+
+<!-- ==================================
+     RESULTADOS DE MAZOS
+================================== -->
+<section class="popular-section">
+    <div class="section-heading">
+        <div>
+            <span class="section-tag">RESULTADOS</span>
+            <h2 id="resultsTitle">Mazos disponibles</h2>
+            <p id="resultsCount">Cargando biblioteca...</p>
+        </div>
+
+        <a href="creador_mazos.html" class="primary-btn">
+            + Crear mazo
+        </a>
+    </div>
+
+    <div class="deck-grid" id="deck-grid">
+        <div class="empty-message">
+            <span>⏳</span>
+            <h3>Cargando mazos...</h3>
+        </div>
+    </div>
+</section>
+
+<!-- ==================================
+     COMUNIDAD
+================================== -->
+<section class="community">
+    <div>
+        <span class="section-tag">COMPARTE TU ESTRATEGIA</span>
+        <h2>¿No encuentras tu mazo favorito?</h2>
+        <p>
+            Ármalo en nuestro constructor interactivo y publícalo para que
+            toda la comunidad pueda probarlo y votarlo.
+        </p>
+    </div>
+    <a href="creador_mazos.html" class="primary-btn">
+        Crea tu mazo →
+    </a>
+</section>
+
+</main>
+
+<!-- ==================================
+     FOOTER
+================================== -->
+<footer>
+    <a href="index.html" class="logo">
+        ⚔ CLASHITO
+    </a>
+    <p>
+        Tu espacio para descubrir y compartir mazos de Clash Royale.
+    </p>
+    <small>
+        © 2026 Clashito. Todos los derechos reservados.
+    </small>
+</footer>
+
+<!-- ==================================
+     LÓGICA DE BÚSQUEDA CON SUPABASE
+================================== -->
+<script>
+    const SUPABASE_URL = 'https://grxoyzivmnoaqdisejri.supabase.co';
+    const SUPABASE_ANON_KEY = 'TU-LLAVE-ANON-PUBLICA'; // Pega aquí tu llave anon/public
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Mazos de respaldo en caso de que aún no conectes tu API Key o la BD esté vacía
+    const mazosRespaldo = [
+        {
+            id: 1,
+            nombre: 'Log Bait Clásico',
+            tipo: 'Spell Bait',
+            descripcion: 'Presiona constantemente con el barril de duendes y defiende con la torre infernal y el caballero.',
+            costo_promedio: 3.3,
+            puntuacion: 142,
+            cartas: [
+                { nombre: 'Barril de Duendes', imagen: 'Card_Goblin_Barrel.png' },
+                { nombre: 'Princesa', imagen: 'Card_Princess.png' },
+                { nombre: 'Pandilla de Duendes', imagen: 'Card_Goblin_Gang.png' },
+                { nombre: 'Torre Infernal', imagen: 'Card_Inferno_Tower.png' },
+                { nombre: 'Caballero', imagen: 'Card_Knight.png' },
+                { nombre: 'Espíritu de Hielo', imagen: 'Card_Ice_Spirit.png' },
+                { nombre: 'Cohete', imagen: 'Card_Rocket.png' },
+                { nombre: 'El Tronco', imagen: 'Card_The_Log.png' }
+            ]
+        },
+        {
+            id: 2,
+            nombre: '2.6 Hog Cycle',
+            tipo: 'Cycle',
+            descripcion: 'Cicla rápido el Montapuercos y defiende cualquier ataque con Cañón, Mosquetera y Gólem de Hielo.',
+            costo_promedio: 2.6,
+            puntuacion: 250,
+            cartas: [
+                { nombre: 'Montapuercos', imagen: 'Card_Hog_Rider.png' },
+                { nombre: 'Esqueletos', imagen: 'Card_Skeletons.png' },
+                { nombre: 'Espíritu de Hielo', imagen: 'Card_Ice_Spirit.png' },
+                { nombre: 'Gólem de Hielo', imagen: 'Card_Ice_Golem.png' },
+                { nombre: 'Mosquetera', imagen: 'Card_Musketeer.png' },
+                { nombre: 'Cañón', imagen: 'Card_Cannon.png' },
+                { nombre: 'Bola de Fuego', imagen: 'Card_Fireball.png' },
+                { nombre: 'El Tronco', imagen: 'Card_The_Log.png' }
+            ]
+        }
+    ];
+
+    const imagenesCartas = {
+        "Barril de Duendes": "Goblin Barrel", "Princesa": "Princess",
+        "Pandilla de Duendes": "Goblin Gang", "Torre Infernal": "Inferno Tower",
+        "Caballero": "Knight", "Espíritu de Hielo": "Ice Spirit",
+        "Cohete": "Rocket", "El Tronco": "The Log", "Tronco": "The Log",
+        "Montapuercos": "Hog Rider", "Esqueletos": "Skeletons",
+        "Golem de Hielo": "Ice Golem", "Gólem de Hielo": "Ice Golem",
+        "Mosquetera": "Musketeer", "Cañón": "Cannon", "Bola de Fuego": "Fireball",
+        "Pekka": "Pekka", "P.E.K.K.A.": "Pekka", "Mago Eléctrico": "Electro Wizard",
+        "Bandida": "Bandit", "Fantasma Real": "Royal Ghost",
+        "Ariete de Batalla": "Battle Ram", "Veneno": "Poison",
+        "Descarga": "Zap", "Zap": "Zap", "Esbirros": "Minion",
+        "Mago": "Wizard", "Valquiria": "Valkyrie", "Dragón Infernal": "Inferno Dragon",
+        "Bebé Dragón": "Baby Dragon", "Gigante": "Giant",
+        "Globo Bombástico": "Balloon", "Leñador": "Lumberjack",
+        "Minero": "Miner", "Arquera": "Archers", "Arqueras": "Archers",
+        "Reina Arquera": "Archer Queen", "Rey Esqueleto": "Skeleton King",
+        "Caballero Dorado": "Golden Knight", "Minero Poderoso": "Mighty Miner",
+        "Fénix": "Phoenix", "Monje": "Monk", "Esqueleto Gigante": "Giant Skeleton",
+        "Megaesbirro": "Mega Minion", "Dragón Eléctrico": "Electro Dragon",
+        "Lanzafuegos": "Firecracker", "Murciélagos": "Bats", "Tornado": "Tornado",
+        "Ejército de Esqueletos": "Skeleton Army", "Duendes": "Goblins",
+        "Cementerio": "Graveyard", "Cazador": "Hunter", "Pescador": "Fisherman",
+        "Gigante Noble": "Royal Giant", "Mega Caballero": "Mega Knight",
+        "Bruja": "Witch", "Bruja Madre": "Mother Witch",
+        "Dragones Esqueleto": "Skeleton Dragons", "Jaula del Forzudo": "Goblin Cage",
+        "Mortero": "Mortar", "Ballesta": "X-Bow", "Lanzarrocas": "Bowler",
+        "Duende Lanzadardos": "Dart Goblin", "Barril de Bárbaro": "Barbarian Barrel",
+        "Flechas": "Arrows", "Horno": "Furnace",
+        "Recolector de Elixir": "Elixir Collector", "Torre Bombardera": "Bomb Tower",
+        "Guardias": "Guards", "Bruja Nocturna": "Night Witch",
+        "Duende Gigante": "Goblin Giant", "Furia": "Rage", "Rayo": "Lightning",
+        "Congelación": "Freeze", "Espejo": "Mirror", "Clon": "Clone",
+        "Terremoto": "Earthquake", "Reclutas Reales": "Royal Recruits",
+        "Puercos Reales": "Royal Hogs", "Máquina Voladora": "Flying Machine",
+        "Cerdos Reales": "Royal Hogs", "Espíritu Eléctrico": "Electro Spirit",
+        "Espíritu Sanador": "Heal Spirit", "Espíritu de Fuego": "Fire Spirit",
+        "Bárbaros": "Barbarians", "Bárbaros de Élite": "Elite Barbarians",
+        "Príncipe": "Prince", "Príncipe Oscuro": "Dark Prince"
+    };
+
+    let todosLosMazos = [];
+    let filtroIdActivo = null;
+
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const sortSelect = document.getElementById('sortSelect');
+    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    const deckGrid = document.getElementById('deck-grid');
+    const resultsCount = document.getElementById('resultsCount');
+    const activeIdBanner = document.getElementById('activeIdBanner');
+    const showAllDecksBtn = document.getElementById('showAllDecksBtn');
+
+    function escaparHTML(texto) {
+        if (texto === null || texto === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(texto);
+        return div.innerHTML;
+    }
+
+    function obtenerRutaImagen(carta) {
+        if (carta.imagen && carta.imagen.trim() !== '') {
+            return carta.imagen.startsWith('img/') ? carta.imagen : `img/${carta.imagen}`;
+        }
+        let nombreIngles = imagenesCartas[carta.nombre] || carta.nombre;
+        nombreIngles = nombreIngles
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .replace(/[\s.]/g, '_');
+        return `img/Card_${nombreIngles}.png`;
+    }
+
+    // Detecta el arquetipo si está escrito en la descripción (ej. "Tipo: Cycle | ...")
+    function extraerTipoMazo(mazo) {
+        if (mazo.tipo) return mazo.tipo;
+        const desc = (mazo.descripcion || '').toLowerCase();
+        if (desc.includes('spell bait')) return 'Spell Bait';
+        if (desc.includes('beatdown')) return 'Beatdown';
+        if (desc.includes('control')) return 'Control';
+        if (desc.includes('cycle')) return 'Cycle';
+        return 'Mazo Comunidad';
+    }
+
+    function renderizarMazos(lista) {
+        resultsCount.textContent = `${lista.length} ${lista.length === 1 ? 'mazo encontrado' : 'mazos encontrados'}`;
+
+        if (lista.length === 0) {
+            deckGrid.innerHTML = `
+                <div class="empty-message">
+                    <span>🔍</span>
+                    <h3>No se encontraron mazos</h3>
+                    <p>Prueba con otro nombre de carta, cambia el filtro de estrategia o crea un mazo nuevo.</p>
+                </div>`;
+            return;
+        }
+
+        deckGrid.innerHTML = '';
+
+        lista.forEach(mazo => {
+            const cartas = mazo.cartas || [];
+            let cartasHTML = '';
+
+            cartas.forEach(carta => {
+                if (!carta) return;
+                const rutaImg = obtenerRutaImagen(carta);
+                cartasHTML += `
+                    <div class="game-card">
+                        <img src="${escaparHTML(rutaImg)}" alt="${escaparHTML(carta.nombre)}" class="card-image" loading="lazy">
+                        <span>${escaparHTML(carta.nombre)}</span>
+                    </div>
+                `;
+            });
+
+            const tipoMazo = extraerTipoMazo(mazo);
+            const desc = mazo.descripcion || 'Sin descripción de estrategia.';
+
+            const tarjetaHTML = `
+                <article class="deck-card">
+                    <div class="deck-header">
+                        <div>
+                            <span class="deck-type">${escaparHTML(tipoMazo)}</span>
+                            <h3>${escaparHTML(mazo.nombre)}</h3>
+                        </div>
+                        <div class="elixir">⚡ ${escaparHTML(mazo.costo_promedio)}</div>
+                    </div>
+
+                    <div class="cards-grid">
+                        ${cartasHTML}
+                    </div>
+
+                    <div class="deck-description">
+                        ${escaparHTML(desc)}
+                    </div>
+
+                    <div class="deck-footer">
+                        <span class="votes">👍 ${mazo.puntuacion || 0} votos</span>
+                        <button type="button" class="secondary-btn" onclick="votarMazo(${mazo.id}, this)" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">
+                            Votar mazo +1
+                        </button>
+                    </div>
+                </article>
+            `;
+
+            deckGrid.insertAdjacentHTML('beforeend', tarjetaHTML);
+        });
+    }
+
+    function aplicarFiltros() {
+        let filtrados = [...todosLosMazos];
+
+        // 1. Si viene un ?id= específico en la URL
+        if (filtroIdActivo !== null) {
+            filtrados = filtrados.filter(m => Number(m.id) === Number(filtroIdActivo));
+            renderizarMazos(filtrados);
+            return;
+        }
+
+        // 2. Filtro por texto (busca en nombre, descripción o nombres de las 8 cartas)
+        const texto = searchInput.value.trim().toLowerCase();
+        if (texto !== '') {
+            filtrados = filtrados.filter(m => {
+                const enNombre = (m.nombre || '').toLowerCase().includes(texto);
+                const enDesc = (m.descripcion || '').toLowerCase().includes(texto);
+                const enCartas = (m.cartas || []).some(c => (c.nombre || '').toLowerCase().includes(texto));
+                return enNombre || enDesc || enCartas;
+            });
+        }
+
+        // 3. Filtro por tipo de estrategia
+        const tipoSeleccionado = typeFilter.value;
+        if (tipoSeleccionado !== '') {
+            filtrados = filtrados.filter(m => {
+                const tipoMazo = extraerTipoMazo(m).toLowerCase();
+                return tipoMazo === tipoSeleccionado.toLowerCase();
+            });
+        }
+
+        // 4. Ordenamiento
+        const orden = sortSelect.value;
+        filtrados.sort((a, b) => {
+            if (orden === 'puntuacion') return (b.puntuacion || 0) - (a.puntuacion || 0);
+            if (orden === 'recientes') return (b.id || 0) - (a.id || 0);
+            if (orden === 'elixir_asc') return Number(a.costo_promedio || 0) - Number(b.costo_promedio || 0);
+            if (orden === 'elixir_desc') return Number(b.costo_promedio || 0) - Number(a.costo_promedio || 0);
+            return 0;
+        });
+
+        renderizarMazos(filtrados);
+    }
+
+    // Función para sumar +1 voto en Supabase
+    async function votarMazo(idMazo, boton) {
+        const mazo = todosLosMazos.find(m => Number(m.id) === Number(idMazo));
+        if (!mazo) return;
+
+        const nuevosVotos = (mazo.puntuacion || 0) + 1;
+        mazo.puntuacion = nuevosVotos;
+        boton.disabled = true;
+        boton.textContent = '¡Votado!';
+
+        if (SUPABASE_ANON_KEY !== 'TU-LLAVE-ANON-PUBLICA') {
+            await supabaseClient
+                .from('mazos')
+                .update({ puntuacion: nuevosVotos })
+                .eq('id', idMazo);
+        }
+
+        aplicarFiltros();
+    }
+
+    async function inicializarBusqueda() {
+        // Leer parámetros de la URL (?tipo=Cycle o ?id=1)
+        const params = new URLSearchParams(window.location.search);
+        const tipoParam = params.get('tipo');
+        const idParam = params.get('id');
+
+        if (tipoParam) {
+            typeFilter.value = tipoParam;
+        }
+
+        if (idParam) {
+            filtroIdActivo = Number(idParam);
+            activeIdBanner.style.display = 'flex';
+            document.getElementById('activeIdText').textContent = `Mostrando el mazo #${filtroIdActivo}`;
+        }
+
+        // Si aún no has puesto tu API key, usa los mazos de ejemplo
+        if (SUPABASE_ANON_KEY === 'TU-LLAVE-ANON-PUBLICA') {
+            todosLosMazos = mazosRespaldo;
+            aplicarFiltros();
+            return;
+        }
+
+        const { data: mazos, error } = await supabaseClient
+            .from('mazos')
+            .select(`
+                id,
+                nombre,
+                descripcion,
+                costo_promedio,
+                puntuacion,
+                mazo_cartas (
+                    cartas (
+                        nombre,
+                        imagen
+                    )
+                )
+            `)
+            .order('puntuacion', { ascending: false });
+
+        if (error || !mazos || mazos.length === 0) {
+            todosLosMazos = mazosRespaldo;
+        } else {
+            todosLosMazos = mazos.map(m => ({
+                ...m,
+                cartas: m.mazo_cartas ? m.mazo_cartas.map(mc => mc.cartas) : []
+            }));
+        }
+
+        aplicarFiltros();
+    }
+
+    // Eventos de filtros
+    searchInput.addEventListener('input', () => {
+        filtroIdActivo = null;
+        activeIdBanner.style.display = 'none';
+        aplicarFiltros();
+    });
+
+    typeFilter.addEventListener('change', () => {
+        filtroIdActivo = null;
+        activeIdBanner.style.display = 'none';
+        aplicarFiltros();
+    });
+
+    sortSelect.addEventListener('change', aplicarFiltros);
+
+    resetFiltersBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        typeFilter.value = '';
+        sortSelect.value = 'puntuacion';
+        filtroIdActivo = null;
+        activeIdBanner.style.display = 'none';
+        window.history.replaceState({}, document.title, 'busqueda.html');
+        aplicarFiltros();
+    });
+
+    showAllDecksBtn.addEventListener('click', () => {
+        filtroIdActivo = null;
+        activeIdBanner.style.display = 'none';
+        window.history.replaceState({}, document.title, 'busqueda.html');
+        aplicarFiltros();
+    });
+
+    document.addEventListener('DOMContentLoaded', inicializarBusqueda);
+</script>
+
+</body>
+</html>
