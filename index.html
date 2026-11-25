@@ -25,7 +25,6 @@
         <a href="index.html" class="active">Inicio</a>
         <a href="busqueda.html">Mazos</a>
         <a href="creador_mazos.html">Creador</a>
-        <a href="servicios.html">Servicios</a>
         <a href="contacto.html">Contacto</a>
     </nav>
 
@@ -241,9 +240,9 @@
      CONEXIÓN A SUPABASE
 ================================== -->
 <script>
-
     const SUPABASE_URL = 'https://grxoyzivmnoaqdisejri.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_5ApgNCfNAQJ-bOtziCTMPA_yVifuKwt';
+    const SUPABASE_ANON_KEY = 'TU-LLAVE-ANON-PUBLICA'; 
+
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const imagenesCartas = {
@@ -296,16 +295,7 @@
 
     function obtenerRutaImagen(carta) {
         if (carta.imagen && carta.imagen.trim() !== '') {
-            return `img/${carta.imagen}`;
-        }
-        let nombreIngles = imagenesCartas[carta.nombre] || carta.nombre;
-        nombreIngles = nombreIngles
-            .trim()
-            .replace(/\s+/g, ' ')
-            .toLowerCase()
-            .replace(/\b\w/g, l => l.toUpperCase())
-            .replace(/[\s.]/g, '_');
-        return `img/Card_${nombreIngles}.png`;
+            return `img/${carta.imagen}`; } let nombreIngles = imagenesCartas[carta.nombre] \vert{}\vert{} carta.nombre; nombreIngles = nombreIngles .trim() .replace(/\s+/g, ' ') .toLowerCase() .replace(/\b\w/g, l => l.toUpperCase()) .replace(/[\s.]/g, '_'); return `img/Card_${nombreIngles}.png`;
     }
 
     async function cargarMazosPopulares() {
@@ -373,19 +363,7 @@
                         </div>
 
                         <div class="deck-footer">
-                            <span class="votes">👍 ${mazo.puntuacion || 0} votos</span>
-                            <a href="busqueda.html?id=${mazo.id}">Explorar mazo →</a>
-                        </div>
-                    </article>
-                `;
-
-                contenedor.insertAdjacentHTML('beforeend', tarjetaHTML);
-            });
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarMazosPopulares);
-</script>
+                            <span class="votes">👍 ${mazo.
 
 </body>
 </html>
